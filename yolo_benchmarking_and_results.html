@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#ffffff;font-family:Arial,sans-serif;color:#111;padding:20px 16px 28px}
+h2{font-size:14px;font-weight:700;color:#111;margin-bottom:2px;letter-spacing:0}
+.fig-label{font-size:11px;color:#555;font-style:italic;margin-bottom:12px}
+.section{margin-bottom:28px}
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{background:#1a1a2e;color:#fff;padding:6px 8px;text-align:center;font-weight:700;font-size:11px}
+th.left{text-align:left}
+td{padding:5px 8px;border-bottom:1px solid #ddd;text-align:center;font-size:11px}
+td.left{text-align:left}
+tr.selected{background:#FFF5CC}
+tr.selected td{font-weight:700;color:#333}
+.badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700}
+.safe{background:#d4edda;color:#155724}
+.unsafe{background:#f8d7da;color:#721c24}
+.warn{background:#fff3cd;color:#856404}
+/* CHARTS */
+.charts-row{display:flex;gap:14px;margin-top:0}
+.chart-box{flex:1;min-width:0}
+.chart-title{font-size:12px;font-weight:700;color:#111;margin-bottom:6px;text-align:center}
+.bar-chart{width:100%}
+.bar-row{display:flex;align-items:center;margin-bottom:5px;gap:6px}
+.bar-label{font-size:10px;color:#333;width:52px;text-align:right;flex-shrink:0}
+.bar-track{flex:1;background:#eee;border-radius:2px;height:16px;position:relative}
+.bar-fill{height:100%;border-radius:2px;display:flex;align-items:center;padding-right:5px;justify-content:flex-end}
+.bar-val{font-size:9px;font-weight:700;color:#fff}
+.bar-val-dark{font-size:9px;font-weight:700;color:#333;margin-left:3px}
+/* SCATTER */
+.scatter-wrap{position:relative;margin:0 auto}
+/* ABLATION */
+.abl-row{display:flex;align-items:center;margin-bottom:4px;gap:6px}
+.abl-label{font-size:10px;color:#333;width:200px;flex-shrink:0;line-height:1.3}
+.abl-bar-acc{height:14px;background:#2266BB;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px}
+.abl-bar-fn{height:14px;background:#CC3333;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px}
+.abl-val{font-size:9px;color:#fff;font-weight:700}
+.abl-track{flex:1;background:#eee;border-radius:2px;height:14px;overflow:hidden}
+/* FLIGHT TABLE */
+.ftable th{background:#1a4488}
+/* TWO COL */
+.two-col{display:flex;gap:14px}
+.two-col > div{flex:1;min-width:0}
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:0}
+.metric-card{background:#f5f8ff;border:1px solid #bbd0f0;border-radius:5px;padding:8px;text-align:center}
+.metric-val{font-size:18px;font-weight:700;color:#1a4488}
+.metric-sub{font-size:9px;color:#555;margin-top:2px;line-height:1.3}
+.divider{border:none;border-top:1.5px solid #222;margin:14px 0 12px}
+.legend-row{display:flex;gap:16px;margin-bottom:8px;font-size:10px;color:#333;align-items:center}
+.leg-swatch{width:12px;height:12px;border-radius:2px;display:inline-block;vertical-align:middle;margin-right:3px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+ SECTION A — BENCHMARK TABLE
+══════════════════════════════════ -->
+<div class="section">
+<h2>Fig. 3 — YOLOv8 family variant concurrent-load benchmarking on Jetson Orin Nano</h2>
+<p class="fig-label">All variants trained identically on Mars-analog depth dataset; evaluated under full concurrent load (VINS-Mono, MAVROS, obstacle avoidance, ROS Noetic active simultaneously).</p>
+
+<table>
+<thead>
+<tr>
+  <th class="left">Variant</th>
+  <th>Params (M)</th>
+  <th>GFLOPs</th>
+  <th>Accuracy (%)</th>
+  <th>FN Rate (%)</th>
+  <th>Throughput (Hz)</th>
+  <th>GPU Util. (%)</th>
+  <th>Inference (ms)</th>
+  <th>Status under load</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td class="left">YOLOv8n</td>
+  <td>3.2</td><td>8.7</td><td>81.6</td><td style="color:#cc3333;font-weight:700">18.4</td><td>28.1</td><td>48</td><td>35.6</td>
+  <td><span class="badge unsafe">UNSAFE — high FN rate</span></td>
+</tr>
+<tr>
+  <td class="left">YOLOv8s</td>
+  <td>11.2</td><td>28.8</td><td>87.3</td><td style="color:#cc3333;font-weight:700">12.7</td><td>23.3</td><td>55</td><td>42.9</td>
+  <td><span class="badge unsafe">UNSAFE — high FN rate</span></td>
+</tr>
+<tr class="selected">
+  <td class="left">YOLOv8m ✓</td>
+  <td>25.9</td><td>78.9</td><td style="color:#155724;font-weight:700">94.3</td><td style="color:#155724;font-weight:700">5.7</td><td>18.3</td><td>67</td><td>54.6</td>
+  <td><span class="badge safe">SAFE — all constraints met</span></td>
+</tr>
+<tr>
+  <td class="left">YOLOv8l</td>
+  <td>43.7</td><td>165.2</td><td>97.2</td><td>2.8</td><td>6.2</td><td style="color:#cc3333;font-weight:700">98</td><td>161.3</td>
+  <td><span class="badge unsafe">UNSAFE — MAVLink failures</span></td>
+</tr>
+<tr>
+  <td class="left">YOLOv8x</td>
+  <td>68.2</td><td>257.8</td><td>98.1</td><td>1.9</td><td>2.8</td><td style="color:#cc3333;font-weight:700">&gt;99</td><td>357.1</td>
+  <td><span class="badge unsafe">UNSAFE — CPU saturation</span></td>
+</tr>
+</tbody>
+</table>
+<p style="font-size:9.5px;color:#555;margin-top:4px;font-style:italic">Triple safety constraint: FN rate ≤ 8%, sustained throughput ≥ 5 Hz, GPU utilisation ≤ 80%. YOLOv8m is the unique Pareto-optimal variant satisfying all three simultaneously. ★ = selected model.</p>
+</div>
+
+<!-- ══════════════════════════════════
+ SECTION B — BAR CHARTS
+══════════════════════════════════ -->
+<div class="section">
+<h2>Variant performance profiles under concurrent load</h2>
+<p class="fig-label">Visual comparison of the five YOLOv8 variants across safety-critical metrics. Dashed red lines mark constraint boundaries.</p>
+
+<div class="charts-row">
+
+<!-- Accuracy -->
+<div class="chart-box">
+<div class="chart-title">Detection accuracy (%)</div>
+<div class="bar-chart">
+  <div class="bar-row"><span class="bar-label">v8n</span><div class="bar-track"><div class="bar-fill" style="width:83%;background:#CC3333"><span class="bar-val">81.6</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8s</span><div class="bar-track"><div class="bar-fill" style="width:89%;background:#CC3333"><span class="bar-val">87.3</span></div></div></div>
+  <div class="bar-row"><span class="bar-label" style="font-weight:700;color:#1a4488">v8m ✓</span><div class="bar-track"><div class="bar-fill" style="width:96%;background:#1a6633"><span class="bar-val">94.3</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8l</span><div class="bar-track"><div class="bar-fill" style="width:99%;background:#888"><span class="bar-val">97.2</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8x</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#888"><span class="bar-val">98.1</span></div></div></div>
+</div>
+<p style="font-size:9px;color:#555;margin-top:3px;text-align:center">Constraint: ≥ 92% (FN ≤ 8%)</p>
+</div>
+
+<!-- Throughput -->
+<div class="chart-box">
+<div class="chart-title">Throughput (Hz)</div>
+<div class="bar-chart">
+  <div class="bar-row"><span class="bar-label">v8n</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#888"><span class="bar-val">28.1</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8s</span><div class="bar-track"><div class="bar-fill" style="width:83%;background:#888"><span class="bar-val">23.3</span></div></div></div>
+  <div class="bar-row"><span class="bar-label" style="font-weight:700;color:#1a4488">v8m ✓</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:#1a6633"><span class="bar-val">18.3</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8l</span><div class="bar-track"><div class="bar-fill" style="width:22%;background:#CC3333"><span class="bar-val">6.2</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8x</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:#CC3333"><span class="bar-val">2.8</span></div></div></div>
+</div>
+<p style="font-size:9px;color:#555;margin-top:3px;text-align:center">Constraint: ≥ 5 Hz (real-time floor)</p>
+</div>
+
+<!-- GPU Util -->
+<div class="chart-box">
+<div class="chart-title">GPU utilisation (%)</div>
+<div class="bar-chart">
+  <div class="bar-row"><span class="bar-label">v8n</span><div class="bar-track"><div class="bar-fill" style="width:48%;background:#888"><span class="bar-val">48</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8s</span><div class="bar-track"><div class="bar-fill" style="width:55%;background:#888"><span class="bar-val">55</span></div></div></div>
+  <div class="bar-row"><span class="bar-label" style="font-weight:700;color:#1a4488">v8m ✓</span><div class="bar-track"><div class="bar-fill" style="width:67%;background:#1a6633"><span class="bar-val">67</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8l</span><div class="bar-track"><div class="bar-fill" style="width:98%;background:#CC3333"><span class="bar-val">98</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8x</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#CC3333"><span class="bar-val">&gt;99</span></div></div></div>
+</div>
+<p style="font-size:9px;color:#555;margin-top:3px;text-align:center">Constraint: ≤ 80% (headroom for nav stack)</p>
+</div>
+
+<!-- FN Rate -->
+<div class="chart-box">
+<div class="chart-title">False negative rate (%)</div>
+<div class="bar-chart">
+  <div class="bar-row"><span class="bar-label">v8n</span><div class="bar-track"><div class="bar-fill" style="width:94%;background:#CC3333"><span class="bar-val">18.4</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8s</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:#CC3333"><span class="bar-val">12.7</span></div></div></div>
+  <div class="bar-row"><span class="bar-label" style="font-weight:700;color:#1a4488">v8m ✓</span><div class="bar-track"><div class="bar-fill" style="width:29%;background:#1a6633"><span class="bar-val">5.7</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8l</span><div class="bar-track"><div class="bar-fill" style="width:14%;background:#555"><span class="bar-val">2.8</span></div></div></div>
+  <div class="bar-row"><span class="bar-label">v8x</span><div class="bar-track"><div class="bar-fill" style="width:10%;background:#555"><span class="bar-val">1.9</span></div></div></div>
+</div>
+<p style="font-size:9px;color:#555;margin-top:3px;text-align:center">Constraint: ≤ 8% (safety floor)</p>
+</div>
+
+</div><!-- end charts-row -->
+</div>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════
+ SECTION C — PREPROCESSING ABLATION
+══════════════════════════════════ -->
+<div class="section">
+<h2>HSV-Value preprocessing ablation: accuracy and FN rate by pipeline stage</h2>
+<p class="fig-label">Monotonic improvement at each stage; evaluated on 500-image held-out test set under concurrent Jetson Orin Nano load.</p>
+
+<div class="legend-row">
+  <span><span class="leg-swatch" style="background:#2266BB"></span>Detection accuracy (%)</span>
+  <span><span class="leg-swatch" style="background:#CC3333"></span>False negative rate (%)</span>
+  <span><span class="leg-swatch" style="background:#888"></span>Inference latency (ms / 10)</span>
+</div>
+
+<!-- Rows: each pipeline config -->
+<div style="display:flex;flex-direction:column;gap:6px">
+
+<div style="display:flex;gap:8px;align-items:flex-start">
+  <div style="width:210px;flex-shrink:0;font-size:10px;color:#333;padding-top:2px;line-height:1.3">Raw 16-bit → YOLOv8m<br><span style="color:#888;font-size:9px">(baseline)</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+    <div style="display:flex;align-items:center;gap:4px">
+      <div style="width:calc(88.2% * 0.9);height:13px;background:#2266BB;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">88.2%</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <div style="width:calc(11.8% * 5);height:13px;background:#CC3333;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">11.8%</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:4px">
+      <div style="width:calc(71.5% * 0.9);height:13px;background:#999;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">71.5 ms</span></div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;gap:8px;align-items:flex-start">
+  <div style="width:210px;flex-shrink:0;font-size:10px;color:#333;padding-top:2px;line-height:1.3">8-bit grayscale only</div>
+  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+    <div style="width:calc(91.6% * 0.9);height:13px;background:#2266BB;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">91.6%</span></div>
+    <div style="width:calc(8.4% * 5);height:13px;background:#CC3333;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">8.4%</span></div>
+    <div style="width:calc(55.9% * 0.9);height:13px;background:#999;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">55.9 ms</span></div>
+  </div>
+</div>
+
+<div style="display:flex;gap:8px;align-items:flex-start">
+  <div style="width:210px;flex-shrink:0;font-size:10px;color:#333;padding-top:2px;line-height:1.3">8-bit + bilateral filter</div>
+  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+    <div style="width:calc(92.8% * 0.9);height:13px;background:#2266BB;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">92.8%</span></div>
+    <div style="width:calc(7.2% * 5);height:13px;background:#CC3333;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">7.2%</span></div>
+    <div style="width:calc(56.4% * 0.9);height:13px;background:#999;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">56.4 ms</span></div>
+  </div>
+</div>
+
+<div style="display:flex;gap:8px;align-items:flex-start">
+  <div style="width:210px;flex-shrink:0;font-size:10px;color:#333;padding-top:2px;line-height:1.3">8-bit + temporal avg + bilateral</div>
+  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+    <div style="width:calc(93.4% * 0.9);height:13px;background:#2266BB;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">93.4%</span></div>
+    <div style="width:calc(6.6% * 5);height:13px;background:#CC3333;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">6.6%</span></div>
+    <div style="width:calc(56.7% * 0.9);height:13px;background:#999;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">56.7 ms</span></div>
+  </div>
+</div>
+
+<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 6px;background:#FFFBDD;border:1px solid #DDAA00;border-radius:4px">
+  <div style="width:210px;flex-shrink:0;font-size:10px;color:#333;padding-top:2px;line-height:1.3;font-weight:700">Full pipeline: + HSV-Value<br><span style="font-size:9px;color:#1a4488">(proposed)</span></div>
+  <div style="flex:1;display:flex;flex-direction:column;gap:2px">
+    <div style="width:calc(94.3% * 0.9);height:13px;background:#1a6633;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">94.3%</span></div>
+    <div style="width:calc(5.7% * 5);height:13px;background:#CC3333;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">5.7%</span></div>
+    <div style="width:calc(54.6% * 0.9);height:13px;background:#555;border-radius:2px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px"><span style="font-size:9px;color:#fff;font-weight:700">54.6 ms</span></div>
+  </div>
+</div>
+
+</div>
+<p style="font-size:9.5px;color:#555;margin-top:6px;font-style:italic">HSV-Value extraction yields the largest single-step FN rate reduction (0.9 pp). 16-bit→8-bit conversion accounts for 31% latency reduction.</p>
+</div>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════
+ SECTION D — DETECTION METRICS
+══════════════════════════════════ -->
+<div class="section">
+<h2>YOLOv8m detection performance metrics (Table IV)</h2>
+<p class="fig-label">Evaluated on 500-image held-out test set under full concurrent Jetson Orin Nano load. Stage 1 = Safe Zone (4–6 m AGL); Stage 2 = Safe Spot (0–4 m AGL).</p>
+
+<div class="two-col">
+<div>
+<table>
+<thead><tr><th class="left">Metric</th><th>Stage 1<br>Safe Zone</th><th>Stage 2<br>Safe Spot</th><th>Combined</th></tr></thead>
+<tbody>
+<tr><td class="left">True positive rate</td><td>94.8%</td><td>93.7%</td><td style="font-weight:700">94.3%</td></tr>
+<tr><td class="left">False positive rate</td><td>4.1%</td><td>3.2%</td><td style="font-weight:700">3.7%</td></tr>
+<tr><td class="left">False negative rate</td><td>5.2%</td><td>6.3%</td><td style="font-weight:700">5.7%</td></tr>
+<tr><td class="left">Precision</td><td>95.8%</td><td>96.7%</td><td style="font-weight:700">96.2%</td></tr>
+<tr><td class="left">Recall</td><td>94.8%</td><td>93.7%</td><td style="font-weight:700">94.3%</td></tr>
+<tr><td class="left">F1-score</td><td>95.3%</td><td>95.2%</td><td style="font-weight:700">95.2%</td></tr>
+<tr><td class="left">mAP@0.5</td><td>96.1%</td><td>94.8%</td><td style="font-weight:700">95.5%</td></tr>
+</tbody>
+</table>
+</div>
+
+<div>
+<div class="metrics-grid">
+  <div class="metric-card"><div class="metric-val">94.3%</div><div class="metric-sub">Combined accuracy</div></div>
+  <div class="metric-card"><div class="metric-val">5.7%</div><div class="metric-sub">False negative rate</div></div>
+  <div class="metric-card"><div class="metric-val">95.5%</div><div class="metric-sub">mAP@0.5</div></div>
+  <div class="metric-card"><div class="metric-val">18.3 Hz</div><div class="metric-sub">Sustained throughput</div></div>
+  <div class="metric-card"><div class="metric-val">67%</div><div class="metric-sub">GPU utilisation</div></div>
+  <div class="metric-card"><div class="metric-val">54.6 ms</div><div class="metric-sub">Inference latency</div></div>
+  <div class="metric-card"><div class="metric-val">0</div><div class="metric-sub">MAVLink heartbeat failures</div></div>
+  <div class="metric-card" style="background:#d4edda;border-color:#28a745"><div class="metric-val" style="color:#155724">✓</div><div class="metric-sub">All triple safety constraints met</div></div>
+</div>
+</div>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════
+ SECTION E — FLIGHT TRIALS
+══════════════════════════════════ -->
+<div class="section">
+<h2> Autonomous landing trials: success by terrain and lighting condition (Table V)</h2>
+<p class="fig-label">120 fully autonomous landing trials; no human intervention beyond arming and mission start. No unsafe landing occurred in any trial.</p>
+
+<div class="two-col">
+<div>
+<table class="ftable">
+<thead><tr><th class="left">Condition</th><th>Attempts</th><th>Successful</th><th>Success rate</th><th>Mean error (m)</th><th>Abort rate</th></tr></thead>
+<tbody>
+<tr><td class="left">Flat terrain (&lt;5° slope)</td><td>30</td><td>30</td><td style="color:#155724;font-weight:700">100.0%</td><td>0.18</td><td>0%</td></tr>
+<tr><td class="left">Moderate slope (5°–12°)</td><td>30</td><td>29</td><td style="color:#155724;font-weight:700">96.7%</td><td>0.29</td><td>3.3%</td></tr>
+<tr><td class="left">Rocky / cratered terrain</td><td>30</td><td>27</td><td style="color:#856404;font-weight:700">90.0%</td><td>0.39</td><td>10.0%</td></tr>
+<tr><td class="left">Variable illumination</td><td>30</td><td>27</td><td style="color:#856404;font-weight:700">90.0%</td><td>0.34</td><td>6.7%</td></tr>
+<tr style="background:#f0f8ff;border-top:2px solid #1a4488"><td class="left" style="font-weight:700">Total</td><td style="font-weight:700">120</td><td style="font-weight:700">113</td><td style="font-weight:700;color:#155724">94.2%</td><td style="font-weight:700">0.31</td><td style="font-weight:700">5.0%</td></tr>
+</tbody>
+</table>
+</div>
+
+<div>
+<!-- Success rate mini bars -->
+<div style="margin-bottom:6px">
+<div style="font-size:11px;font-weight:700;color:#111;margin-bottom:5px;text-align:center">Landing success rate by condition</div>
+<div class="bar-row"><span class="bar-label" style="width:76px;font-size:9px">Flat</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:#1a6633"><span class="bar-val">100.0%</span></div></div></div>
+<div class="bar-row"><span class="bar-label" style="width:76px;font-size:9px">Moderate</span><div class="bar-track"><div class="bar-fill" style="width:96.7%;background:#2266BB"><span class="bar-val">96.7%</span></div></div></div>
+<div class="bar-row"><span class="bar-label" style="width:76px;font-size:9px">Rocky</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:#B8860B"><span class="bar-val">90.0%</span></div></div></div>
+<div class="bar-row"><span class="bar-label" style="width:76px;font-size:9px">Variable lux</span><div class="bar-track"><div class="bar-fill" style="width:90%;background:#B8860B"><span class="bar-val">90.0%</span></div></div></div>
+<div class="bar-row" style="margin-top:4px"><span class="bar-label" style="width:76px;font-size:10px;font-weight:700">Overall</span><div class="bar-track"><div class="bar-fill" style="width:94.2%;background:#1a4488"><span class="bar-val" style="font-size:10px">94.2%</span></div></div></div>
+</div>
+<p style="font-size:9px;color:#555;font-style:italic;text-align:center">Mean horizontal error: 0.31 m across all 120 trials.<br>No unsafe landing (slope &gt;8° or within 20 cm of obstacle) in any trial.</p>
+</div>
+</div>
+</div>
+
+<hr class="divider">
+
+<!-- ══════════════════════════════════
+ SECTION F — PRIOR SYSTEMS COMPARISON
+══════════════════════════════════ -->
+<div class="section">
+<h2>Fig. 8 — Comparison with representative prior systems (Table VI)</h2>
+<p class="fig-label">Only the proposed system achieves concurrent-load deployment on embedded hardware with GPS-denied operation and sub-100 ms inference.</p>
+<table>
+<thead>
+<tr>
+  <th class="left">System</th>
+  <th>Accuracy / Success</th>
+  <th>Inference (ms)</th>
+  <th>Hardware</th>
+  <th>GPS-denied</th>
+  <th>Orbital maps</th>
+</tr>
+</thead>
+<tbody>
+<tr style="background:#f0f8ff">
+  <td class="left" style="font-weight:700">Proposed (YOLOv8m) ★</td>
+  <td style="font-weight:700;color:#155724">94.3% / 94.2%</td>
+  <td style="font-weight:700;color:#155724">54.6</td>
+  <td>Jetson Orin Nano</td>
+  <td style="color:#155724;font-weight:700">Yes</td>
+  <td>No</td>
+</tr>
+<tr>
+  <td class="left">Std. Dev. Thresholding [16]</td>
+  <td>87.3% / —</td><td>~40</td><td>Raspberry Pi 4</td>
+  <td style="color:#155724">Yes</td><td>No</td>
+</tr>
+<tr>
+  <td class="left">SafeUAV [11]</td>
+  <td>~88% / —</td><td style="color:#cc3333">&gt;200</td><td>GPU workstation</td>
+  <td style="color:#cc3333">No</td><td>No</td>
+</tr>
+<tr>
+  <td class="left">VisLanding [13]</td>
+  <td>76.6% mIoU / —</td><td style="color:#cc3333">&gt;100</td><td>GPU server</td>
+  <td style="color:#cc3333">No</td><td>No</td>
+</tr>
+<tr>
+  <td class="left">NASA Mars 2020 LVS [7]*</td>
+  <td>~5 m accuracy</td><td>~500</td><td>RAD750 (custom)</td>
+  <td style="color:#155724">Yes</td><td style="color:#856404">Yes</td>
+</tr>
+</tbody>
+</table>
+<p style="font-size:9px;color:#555;margin-top:4px;font-style:italic">*NASA Mars 2020 LVS addresses orbit-to-surface navigation over kilometres; included for completeness only — not a direct comparison.</p>
+</div>
+
+</body>
+</html>
